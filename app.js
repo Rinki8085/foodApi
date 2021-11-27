@@ -1,18 +1,20 @@
-const express = require('express');
+var express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
 const dotenv = require('dotenv')
 dotenv.config()
-const port = process.env.PORT||8001;
+const port =  process.env.PORT||8210;
 const mongo = require('mongodb');
 const MongoClient = mongo.MongoClient;
-// to receive data from form
-app.use(bodyParser.urlencoded({extended:true})) 
+const cors = require('cors')
+// to recive data from form
+app.use(bodyParser.urlencoded({extended:true}));
 app.use(bodyParser.json());
-//const mongourl = "mongodb://localhost:27017"
-const mongourl = "mongodb+srv://document:rk123456@cluster0.gfit3.mongodb.net/eduaug?retryWrites=true&w=majority";
-var db;
+app.use(cors())
 
+//const mongourl = "mongodb://localhost:27017"
+const mongourl = "mongodb+srv://document:rk123456@cluster0.gfit3.mongodb.net/eduaug?retryWrites=true&w=majority"
+var db;
 //get
 app.get('/',(req,res) => {
     res.send("Welcome to Node Api2")
@@ -39,10 +41,11 @@ app.get('/restaurant',(req,res) =>{
     var query = {}
     if(req.query.stateId){
         query={state_id:Number(req.query.stateId)}
-        console.log(query)
-    }else if(req.query.mealtype_id){
-        query={"mealTypes.mealtype_id":req.query.mealtype}
+        
+    }else if(req.query.mealtype){
+        query={"mealTypes.mealtype_id":Number(req.query.mealtype)}
     }
+    console.log(query)
     db.collection('restaurants').find(query).toArray((err,result)=>{
         if(err) throw err;
         res.send(result)
@@ -72,7 +75,9 @@ app.get('/filter/:mealType',(req,res) => {
         }
     }   
     else if(req.query.cuisine){
-        query = {"mealTypes.mealtype_id":mealType,"cuisines.cuisine_id":Number(req.query.cuisine) }
+        query = {"mealTypes.mealtype_id":Number(mealType),"cuisines.cuisine_id":Number(req.query.cuisine) }
+        console.log(query)
+       
        //query = {"type.mealtype":mealType,"Cuisine.cuisine":{$in:["1","5"]}}
     }
     else if(req.query.lcost && req.query.hcost){
@@ -97,7 +102,25 @@ app.get('/quicksearch',(req,res) =>{
 // restaurant Details
 app.get('/details/:id',(req,res) => {
     var id = req.params.id
+    console.log(id)
     db.collection('restaurants').find({restaurant_id:Number(id)}).toArray((err,result)=>{
+        if(err) throw err;
+        res.send(result)
+    })
+})
+// menu Details on basis for restaurant
+app.get('/menu/:id',(req,res) => {
+    var id = req.params.id
+    console.log(id)
+    db.collection('Restaurantmenu').find({restaurant_id:Number(id)}).toArray((err,result)=>{
+        if(err) throw err;
+        res.send(result)
+    })
+})
+
+app.post('/menuItem',(req,res) => {
+    console.log(req.body)
+    db.collection('Restaurantmenu').find({menu_id:{$in:req.body.id}}).toArray((err,result)=>{
         if(err) throw err;
         res.send(result)
     })
@@ -106,7 +129,7 @@ app.get('/details/:id',(req,res) => {
 // place order 
 app.post('/placeOrder',(req,res) => {
     console.log(req.body);
-    db.collection('orders').insert(req.body,(err,result) => {
+    db.collection('orders').insertMany(req.body,(err,result) => {
         if(err) throw err;
         res.send("Order Placed")
     })
