@@ -108,6 +108,7 @@ app.get('/details/:id',(req,res) => {
         res.send(result)
     })
 })
+
 // menu Details on basis for restaurant
 app.get('/menu/:id',(req,res) => {
     var id = req.params.id
@@ -123,8 +124,10 @@ app.post('/menuItem',(req,res) => {
     db.collection('Restaurantmenu').find({menu_id:{$in:req.body.id}}).toArray((err,result)=>{
         if(err) throw err;
         res.send(result)
+        console.log(result)
     })
 })
+
 // place order 
 app.post('/placeOrder',(req,res) => {
     console.log(req.body);
@@ -160,6 +163,23 @@ app.delete('/deleteOrder',(req,res) => {
     })
 })
 
+app.put('/updateOrder/:id',(req,res) => {
+    var id = Number(req.params.id);
+    var status = req.body.status?req.body.status:"pending";
+    db.collection('orders').updateOne(
+        {id:id},
+        {
+            $set:{
+                "date":req.body.date,
+                "bank_status":req.body.bank_status,
+                "bank":req.body.bank,
+                "status":status
+            }
+        }
+    )
+    res.send('data updated')
+})
+
 app.put('/updateStatus/:id',(req,res) => {
     var id = mongo.ObjectId(req.params.id);
     var status = 'Pending';
@@ -186,6 +206,7 @@ app.put('/updateStatus/:id',(req,res) => {
         }
     )
 })
+
 
 MongoClient.connect(mongourl, (err,client) => {
     if(err) console.log("Error While Connecting");
