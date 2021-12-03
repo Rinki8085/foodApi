@@ -11,6 +11,10 @@ const cors = require('cors')
 app.use(bodyParser.urlencoded({extended:true}));
 app.use(bodyParser.json());
 app.use(cors())
+app.use((req,res,next) => {
+    res.header('Access-Control-Allow-Origin','*');
+    next();
+});
 
 //const mongourl = "mongodb://localhost:27017"
 const mongourl = "mongodb+srv://document:rk123456@cluster0.gfit3.mongodb.net/eduaug?retryWrites=true&w=majority"
