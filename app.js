@@ -169,7 +169,7 @@ app.delete('/deleteOrder',(req,res) => {
 
 app.put('/updateOrder/:id',(req,res) => {
     var id = Number(req.params.id);
-    var status = req.body.status?req.body.status:"pending";
+    var status = req.body.status?req.body.status:"Pending"
     db.collection('orders').updateOne(
         {id:id},
         {
